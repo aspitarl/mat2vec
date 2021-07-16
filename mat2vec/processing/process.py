@@ -1,3 +1,4 @@
+from dataclasses import replace
 import regex
 import string
 import unidecode
@@ -148,7 +149,7 @@ class MaterialsTextProcessor:
         return toks
 
     def process(self, tokens, exclude_punct=False, convert_num=True, normalize_materials=True, remove_accents=True,
-                make_phrases=False, split_oxidation=True):
+                make_phrases=False, split_oxidation=True, replace_elements=False):
         """Processes a pre-tokenized list of strings or a string.
 
         Selective lower casing, material normalization, etc.
@@ -162,7 +163,7 @@ class MaterialsTextProcessor:
             remove_accents: Bool flag to remove accents, e.g. Néel -> Neel.
             make_phrases: Bool flag to convert single tokens to common materials science phrases.
             split_oxidation: Only used if string is supplied, see docstring for tokenize method.
-
+            replace_elements: Whether to convert element strings (e.g. lithium) into element names
         Returns:
             A (processed_tokens, material_list) tuple. processed_tokens is a list of strings,
             whereas material_list is a list of (original_material_string, normalized_material_string)
@@ -176,7 +177,8 @@ class MaterialsTextProcessor:
                 convert_num=convert_num,
                 normalize_materials=normalize_materials,
                 remove_accents=remove_accents,
-                make_phrases=make_phrases
+                make_phrases=make_phrases,
+                replace_elements=replace_elements
             )
 
         processed, mat_list = [], []
@@ -197,7 +199,10 @@ class MaterialsTextProcessor:
             elif tok in self.ELEMENTS_NAMES_UL:  # Chemical element name.
                 # Add as a material mention.
                 mat_list.append((tok, self.elem_name_dict[tok.lower()]))
-                tok = tok.lower()
+                if replace_elements:
+                    tok = self.elem_name_dict[tok.lower()]
+                else:
+                    tok = tok.lower()
             elif self.is_simple_formula(tok):  # Simple chemical formula.
                 normalized_formula = self.normalized_formula(tok)
                 mat_list.append((tok, normalized_formula))
