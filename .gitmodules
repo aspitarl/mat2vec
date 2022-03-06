@@ -1,0 +1,3 @@
+[submodule "ChemDataExtractor"]
+	path = ChemDataExtractor
+	url = https://github.com/aspitarl/ChemDataExtractor
